@@ -7,6 +7,7 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
+import java.util.Iterator;
 
 /**
  * Concrete implementation of {@link IServidorAvisos}.
@@ -54,8 +55,16 @@ public class ServidorAvisos
 	}
 
 	public void setAviso(String mensagem) throws RemoteException {
-		for (IQuadroAvisos board : registeredBoards) {
-			board.notificar(mensagem);
+		Iterator<IQuadroAvisos> it = registeredBoards.iterator();
+		while (it.hasNext()) {
+			IQuadroAvisos board = it.next();
+			try {
+				board.notificar(mensagem);
+			} catch (RemoteException ex) {
+				// Failed to send message to client,
+				// remove it from connected list
+				it.remove();
+			}
 		}
 	}
 
