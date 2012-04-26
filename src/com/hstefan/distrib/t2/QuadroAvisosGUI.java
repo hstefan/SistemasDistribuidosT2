@@ -1,15 +1,8 @@
 package com.hstefan.distrib.t2;
 
-import java.awt.EventQueue;
-
-import javax.swing.JFrame;
-import java.awt.GridBagLayout;
-import javax.swing.JTextPane;
-import java.awt.GridBagConstraints;
-import javax.swing.JList;
-import javax.swing.JTextField;
-import javax.swing.JButton;
-import javax.swing.JTextArea;
+import java.awt.BorderLayout;
+import java.awt.Container;
+import javax.swing.*;
 
 public class QuadroAvisosGUI {
 
@@ -20,16 +13,8 @@ public class QuadroAvisosGUI {
 	 * Launch the application.
 	 */
 	public static void main(String[] args) {
-		EventQueue.invokeLater(new Runnable() {
-			public void run() {
-				try {
-					QuadroAvisosGUI window = new QuadroAvisosGUI();
-					window.frame.setVisible(true);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		});
+		QuadroAvisosGUI window = new QuadroAvisosGUI();
+		window.frame.setVisible(true);
 	}
 
 	/**
@@ -44,23 +29,23 @@ public class QuadroAvisosGUI {
 	 */
 	private void initialize() {
 		frame = new JFrame();
-		frame.setResizable(false);
 		frame.setBounds(100, 100, 450, 300);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frame.getContentPane().setLayout(null);
-		
-		JButton btnEnviar = new JButton("Enviar");
-		btnEnviar.setBounds(327, 243, 117, 29);
-		frame.getContentPane().add(btnEnviar);
-		
+
+		Container content_pane = frame.getContentPane();
+
+		JList messageList = new JList();
+		content_pane.add(messageList, BorderLayout.CENTER);
+
+		JPanel input_section = new JPanel();
+		input_section.setLayout(
+				new BoxLayout(input_section, BoxLayout.LINE_AXIS));
+		content_pane.add(input_section, BorderLayout.PAGE_END);
+
 		textField = new JTextField();
-		textField.setBounds(6, 242, 323, 28);
-		frame.getContentPane().add(textField);
-		textField.setColumns(10);
-		
-		JTextArea textArea = new JTextArea();
-		textArea.setEditable(false);
-		textArea.setBounds(6, 6, 438, 225);
-		frame.getContentPane().add(textArea);
+		input_section.add(textField);
+
+		JButton sendButton = new JButton("Enviar");
+		input_section.add(sendButton);
 	}
 }
