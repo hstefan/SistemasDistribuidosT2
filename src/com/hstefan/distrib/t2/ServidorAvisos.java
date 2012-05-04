@@ -12,14 +12,16 @@ import java.util.Iterator;
 /**
  * Concrete implementation of {@link IServidorAvisos}.
  *
- * @author yuriks
+ * @author yuriks, hstefan
  */
+@SuppressWarnings("serial")
 public class ServidorAvisos
 		extends UnicastRemoteObject
 		implements IServidorAvisos {
 
 	private ArrayList<IQuadroAvisos> registeredBoards;
-
+	public static final int DEFAULT_PORT = 1099;
+	
 	private static void startServer() throws RemoteException {
 		try {
 			System.out.println("Starting bulletin board server.");
@@ -39,7 +41,7 @@ public class ServidorAvisos
 			System.out.println("Error contacting name registry: " + ex.getMessage());
 			System.out.println("Trying to create registry...");
 			try {
-				LocateRegistry.createRegistry(1099);
+				LocateRegistry.createRegistry(DEFAULT_PORT);
 				System.out.println("Registry created!");
 
 				// Try again once
