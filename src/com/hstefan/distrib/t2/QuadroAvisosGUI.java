@@ -7,12 +7,18 @@ import java.awt.event.ActionListener;
 import java.rmi.RemoteException;
 import javax.swing.*;
 
+/**
+*
+* @author yuriks, hstefan
+*/
 public class QuadroAvisosGUI {
 
 	private JFrame frame;
 	private JTextField textField;
 	private DefaultListModel<String> messageListModel;
 	private QuadroAvisos bboard;
+	private static HostDialog hostDlg;
+	
 
 	/**
 	 * Launch the application.
@@ -29,7 +35,8 @@ public class QuadroAvisosGUI {
 		QuadroAvisosGUI window = new QuadroAvisosGUI();
 		QuadroAvisos bboard;
 		try {
-			bboard = new QuadroAvisos(window);
+			bboard = new QuadroAvisos(window, hostDlg.getHost(), 
+					hostDlg.getPort());
 		} catch (RemoteException ex) {
 			System.out.println("Failed to export object: " + ex.getMessage());
 			System.exit(1);
@@ -53,7 +60,7 @@ public class QuadroAvisosGUI {
 		frame = new JFrame();
 		frame.setBounds(100, 100, 450, 300);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
+		
 		Container content_pane = frame.getContentPane();
 
 		messageListModel = new DefaultListModel<String>();
@@ -78,6 +85,9 @@ public class QuadroAvisosGUI {
 				textField.setText(null);
 			}
 		});
+		
+		hostDlg = new HostDialog(frame, true);
+		hostDlg.setVisible(true);
 	}
 
 	void receiveMessage(String mensagem) {

@@ -9,8 +9,9 @@ import javax.swing.SwingUtilities;
 
 /**
  *
- * @author yuriks
+ * @author yuriks, hstefan
  */
+@SuppressWarnings("serial")
 public class QuadroAvisos
 		extends UnicastRemoteObject
 		implements IQuadroAvisos {
@@ -19,10 +20,17 @@ public class QuadroAvisos
 	private IServidorAvisos server;
 
 	@SuppressWarnings("LeakingThisInConstructor")
-	public QuadroAvisos(QuadroAvisosGUI gui) throws RemoteException {
+	public QuadroAvisos(QuadroAvisosGUI gui, String host, int port) throws RemoteException {
 		this.gui = gui;
 		try {
-			server = (IServidorAvisos) Naming.lookup("ServidorAvisos");
+			StringBuilder bHost = new StringBuilder();
+			bHost.append("//");
+			bHost.append(host);
+			bHost.append(":");
+			bHost.append(port);
+			bHost.append("/ServidorAvisos");
+			
+			server = (IServidorAvisos) Naming.lookup(bHost.toString());
 			server.setQuadro(this);
 		} catch (NotBoundException ex) {
 			System.out.println("Bulletin board server not found!");
