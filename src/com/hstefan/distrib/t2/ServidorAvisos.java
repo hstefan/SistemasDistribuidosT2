@@ -9,6 +9,15 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.Iterator;
 
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.OptionBuilder;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
+import org.apache.commons.cli.PosixParser;
+
 /**
  * Concrete implementation of {@link IServidorAvisos}.
  *
@@ -35,13 +44,35 @@ public class ServidorAvisos
 	}
 
 	public static void main(String[] args) {
+		Options opts = new Options();
+		opts.addOption("p", "port", true, "The port where the registry will be created.");
+		@SuppressWarnings("static-access")
+		Option help = OptionBuilder.withLongOpt("help").withDescription("Prints this message.").create();
+		opts.addOption(help);
+		CommandLineParser parser = new PosixParser();
+		CommandLine cmd;
+		
+		int port = DEFAULT_PORT;
+		try {
+			cmd = parser.parse(opts, args);
+			if(cmd.hasOption("help")) {
+				HelpFormatter formater = new HelpFormatter();
+				formater.printHelp("java com.hstefan.distrib.t1.server.ServerMain", opts);
+				return;
+			} if(cmd.hasOption("port")) {
+				port = Integer.parseInt(cmd.getOptionValue("port"));
+			}
+		} catch (ParseException e) {
+			System.out.println("Warning: failed to parse arguments, assuming default values.");
+		}
+		
 		try {
 			startServer();
 		} catch (RemoteException ex) {
 			System.out.println("Error contacting name registry: " + ex.getMessage());
 			System.out.println("Trying to create registry...");
-			try {
-				LocateRegistry.createRegistry(DEFAULT_PORT);
+			try {				
+				LocateRegistry.createRegistry(port);
 				System.out.println("Registry created!");
 
 				// Try again once
