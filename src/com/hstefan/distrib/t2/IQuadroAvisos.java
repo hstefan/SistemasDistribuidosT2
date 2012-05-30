@@ -11,10 +11,10 @@ import java.rmi.RemoteException;
  */
 public interface IQuadroAvisos extends Remote {
 
-	/**
-	 * Called by {@link IServidorAvisos} when a new message is broadcasted.
-	 *
-	 * @param mensagem The message contents.
-	 */
-	void notificar(String mensagem) throws RemoteException;
+    /**
+     * Called by {@link IServidorAvisos} when a new message is broadcasted.
+     *
+     * @param mensagem The message contents.
+     */
+    void notificar(String mensagem) throws RemoteException;
 }
