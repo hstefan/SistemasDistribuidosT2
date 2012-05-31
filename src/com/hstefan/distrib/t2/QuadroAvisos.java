@@ -93,7 +93,7 @@ public class QuadroAvisos
     @Override
     public void receiveMessage(DatagramPacket packet) {
         mGroupAdresses.add(new HostEntry(packet.getAddress(), packet.getPort(), 
-                new String(packet.getData()) ) );
+                new String(packet.getData()).trim() ) );
     }
     
     @Override
