@@ -1,14 +1,12 @@
 package com.hstefan.distrib.t2;
 
+import java.io.IOException;
 import java.net.DatagramPacket;
-import java.net.InetAddress;
 import java.rmi.*;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 
 /**
@@ -22,9 +20,34 @@ public class QuadroAvisos
     
     private QuadroAvisosGUI gui;
     private Set<HostEntry> mGroupAdresses;
+    private NotificadorPeerAtivo mNotificador;
     
     public static final String REG_NAME = "QuadroAvisos";
 
+    public class NotificadorPeerAtivo extends Thread {
+        private boolean peerAtivo;
+        
+        @Override
+        public void run() {
+            while(peerAtivo) {
+                try {
+                    broadcastMensagem(REG_NAME);
+                    Thread.sleep(200);
+                } catch (IOException ex) {
+                } catch (InterruptedException ex) {
+                }
+            }
+        }
+        
+        public void setPeerAtivo(boolean ativo) {
+            if(peerAtivo != ativo && ativo) {
+                start(); //inicia thread que notifica periodicamente a existência
+                         //do peer
+            }
+            peerAtivo = ativo;
+        }
+    }
+    
     @SuppressWarnings("LeakingThisInConstructor")
     public QuadroAvisos(QuadroAvisosGUI gui, String host, int port) throws RemoteException {
         this.gui = gui;
@@ -69,5 +92,15 @@ public class QuadroAvisos
     public void receiveMessage(DatagramPacket packet) {
         mGroupAdresses.add(new HostEntry(packet.getAddress(), packet.getPort(), 
                 new String(packet.getData()) ) );
+    }
+    
+    @Override
+    protected void posRegistroPeer() {
+        mNotificador.setPeerAtivo(true);
+    }
+    
+    @Override
+    protected void posRemocaoPeer() {
+        mNotificador.setPeerAtivo(false);
     }
 }
