@@ -49,7 +49,7 @@ public abstract class Peer implements IPeer {
         mMulSocket.send(packet);
     }
     
-    public abstract void receiveMessage(String message);
+    public abstract void receiveMessage(DatagramPacket message);
     
     private class ReceiverThread extends Thread {
         public static final int SLEEP_MS = 1000;
@@ -62,8 +62,7 @@ public abstract class Peer implements IPeer {
                     DatagramPacket packet = new DatagramPacket(buf, buf.length);
                     mMulSocket.receive(packet);
                     
-                    String received = new String(packet.getData());
-                    receiveMessage(received);
+                    receiveMessage(packet);
                     
                     sleep(SLEEP_MS);
                 } catch (IOException ex) {
