@@ -41,6 +41,7 @@ public abstract class Peer implements IPeer {
 
     public void removePeer() throws IOException {
         mMulSocket.leaveGroup(mGroupAdress);
+        mReceiverThread.stopThread();
     }
 
     public void broadcastMensagem(String msg) throws IOException {
@@ -53,21 +54,28 @@ public abstract class Peer implements IPeer {
     
     private class ReceiverThread extends Thread {
         public static final int SLEEP_MS = 1000;
+        private boolean mContinue;
+       
+        public void stopThread() {
+            mContinue = false;
+        }
+   
+        @Override
+        public void start() {
+            mContinue = true;
+            super.start();
+        }
         
         @Override
         public void run() {
-            while(true) {
+            while(!mContinue) {
                 try {
                     byte[] buf = new byte[BUFFER_SIZE];
                     DatagramPacket packet = new DatagramPacket(buf, buf.length);
                     mMulSocket.receive(packet);
                     
                     receiveMessage(packet);
-                    
-                    sleep(SLEEP_MS);
                 } catch (IOException ex) {
-                    //TODO
-                } catch (InterruptedException ex) {
                     //TODO
                 }
             }
