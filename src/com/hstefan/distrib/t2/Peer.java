@@ -28,7 +28,7 @@ public abstract class Peer implements IPeer {
             
             mGroupAdress = InetAddress.getByName(host);
             mMulSocket = new MulticastSocket(port);
-            mReceiverThread = new ReceiverThread();
+            mReceiverThread = null;
         } catch (UnknownHostException ex) {
             //TODO
         } catch (IOException ex) {
@@ -38,6 +38,7 @@ public abstract class Peer implements IPeer {
 
     public void registraPeer() throws IOException {
         mMulSocket.joinGroup(mGroupAdress);
+        mReceiverThread = new ReceiverThread();
         mReceiverThread.start();
         posRegistroPeer();
     }
