@@ -1,13 +1,10 @@
 package com.hstefan.distrib.t2;
 
-import java.awt.BorderLayout;
+import java.awt.Container;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-
-import javax.swing.JButton;
-import javax.swing.JDialog;
-import javax.swing.JFrame;
-import javax.swing.JTextField;
+import javax.swing.*;
+import layout.SpringUtilities;
 
 /**
  *
@@ -24,27 +21,35 @@ public class HostDialog extends JDialog {
      */
     public HostDialog(JFrame parent, boolean modal) {
         super(parent, modal);
-        setBounds(100, 100, 300, 60);
+        setBounds(100, 100, 300, 120);
         setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 
+        SpringLayout layout = new SpringLayout();
+        Container content_panel = getContentPane();
+        content_panel.setLayout(layout);
+        
         txtHost = new JTextField();
         txtHost.setText("localhost");
-        getContentPane().add(txtHost, BorderLayout.CENTER);
         txtHost.setColumns(10);
-
+        
+        content_panel.add(txtHost);
+        
+        txtPort = new JTextField();
+        txtPort.setText("1099");
+        txtPort.setColumns(4);
+        
+        content_panel.add(txtPort);
+        
         JButton btnConectar = new JButton("Conectar");
         btnConectar.addActionListener(new ActionListener() {
-
             public void actionPerformed(ActionEvent e) {
                 dispose();
             }
         });
-        getContentPane().add(btnConectar, BorderLayout.SOUTH);
-
-        txtPort = new JTextField();
-        txtPort.setText("1099");
-        getContentPane().add(txtPort, BorderLayout.EAST);
-        txtPort.setColumns(10);
+        
+        content_panel.add(btnConectar);
+        
+        SpringUtilities.makeCompactGrid(content_panel, 3, 1, 5, 5, 5, 5);
     }
 
     public String getHost() {
