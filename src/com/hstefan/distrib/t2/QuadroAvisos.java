@@ -50,6 +50,8 @@ public class QuadroAvisos
     
     @SuppressWarnings("LeakingThisInConstructor")
     public QuadroAvisos(QuadroAvisosGUI gui, String host, int port) throws RemoteException {
+        super(host, port);
+        
         this.gui = gui;
         mGroupAdresses = new HashSet<HostEntry>();
         

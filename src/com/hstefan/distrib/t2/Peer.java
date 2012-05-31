@@ -15,17 +15,19 @@ public abstract class Peer implements IPeer {
     private MulticastSocket mMulSocket;
     private InetAddress mGroupAdress;
     private ReceiverThread mReceiverThread;
-    
-    public static final int MULTICAST_SOCKET_PORT = 6450;
-    public static final String GROUP_ADDRESS = "228.5.6.7";
+   
+    private int mPort;
+    private String mHost;
     
     public static final int BUFFER_SIZE = 1024;
-
     
-    public Peer() {
+    public Peer(String host, int port) {
         try {
-            mGroupAdress = InetAddress.getByName(GROUP_ADDRESS);
-            mMulSocket = new MulticastSocket(MULTICAST_SOCKET_PORT);
+            mHost = host;
+            mPort = port;
+            
+            mGroupAdress = InetAddress.getByName(host);
+            mMulSocket = new MulticastSocket(port);
             mReceiverThread = new ReceiverThread();
         } catch (UnknownHostException ex) {
             //TODO
@@ -48,7 +50,7 @@ public abstract class Peer implements IPeer {
 
     public void broadcastMensagem(String msg) throws IOException {
         DatagramPacket packet = new DatagramPacket(msg.getBytes(), msg.length(),
-                MULTICAST_SOCKET_PORT);
+                mPort);
         mMulSocket.send(packet);
     }
     

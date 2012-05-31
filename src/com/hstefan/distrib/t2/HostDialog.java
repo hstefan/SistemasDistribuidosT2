@@ -29,13 +29,13 @@ public class HostDialog extends JDialog {
         content_panel.setLayout(layout);
         
         txtHost = new JTextField();
-        txtHost.setText("localhost");
+        txtHost.setText("228.5.6.7");
         txtHost.setColumns(10);
         
         content_panel.add(txtHost);
         
         txtPort = new JTextField();
-        txtPort.setText("1099");
+        txtPort.setText("6450");
         txtPort.setColumns(4);
         
         content_panel.add(txtPort);
