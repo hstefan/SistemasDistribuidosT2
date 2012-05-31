@@ -11,7 +11,7 @@ import java.net.UnknownHostException;
  * {@link ReceiverThread} receives a message from the multi-cast group.
  * @author hstefan
  */
-public abstract class Peer implements IPeer {
+public abstract class Peer {
     private MulticastSocket mMulSocket;
     private InetAddress mGroupAdress;
     private ReceiverThread mReceiverThread;
