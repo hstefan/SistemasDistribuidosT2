@@ -16,8 +16,8 @@ public abstract class Peer implements IPeer {
     private InetAddress mGroupAdress;
     private ReceiverThread mReceiverThread;
    
-    private int mPort;
-    private String mHost;
+    protected int mPort;
+    protected String mHost;
     
     public static final int BUFFER_SIZE = 1024;
     

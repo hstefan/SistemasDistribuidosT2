@@ -7,6 +7,8 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 
 /**
@@ -21,6 +23,7 @@ public class QuadroAvisos
     private QuadroAvisosGUI gui;
     private Set<HostEntry> mGroupAdresses;
     private NotificadorPeerAtivo mNotificador;
+    private Registry mLocalRegistry;
     
     public static final String REG_NAME = "QuadroAvisos";
 
@@ -55,14 +58,7 @@ public class QuadroAvisos
         this.gui = gui;
         mGroupAdresses = new HashSet<HostEntry>();
         
-        Registry reg = LocateRegistry.createRegistry(port);
-        try {
-            reg.bind(REG_NAME, this);
-        } catch (AlreadyBoundException ex) {
-            //TODO
-        } catch (AccessException ex) {
-            //TODO
-        }
+        mLocalRegistry = LocateRegistry.createRegistry(mPort);
     }
 
     public void notificar(final String mensagem) throws RemoteException {
@@ -98,11 +94,26 @@ public class QuadroAvisos
     
     @Override
     protected void posRegistroPeer() {
+        try {
+            mLocalRegistry.bind(REG_NAME, this);
+        } catch (RemoteException ex) {
+            //TODO
+        } catch (AlreadyBoundException ex) {
+            //TODO
+        }
+        
         mNotificador.setPeerAtivo(true);
     }
     
     @Override
     protected void posRemocaoPeer() {
         mNotificador.setPeerAtivo(false);
+        try {
+            mLocalRegistry.unbind(REG_NAME);
+        } catch (RemoteException ex) {
+            //TODO
+        } catch (NotBoundException ex) {
+            //TODO
+        } 
     }
 }
