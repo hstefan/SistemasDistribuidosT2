@@ -37,11 +37,13 @@ public abstract class Peer implements IPeer {
     public void registraPeer() throws IOException {
         mMulSocket.joinGroup(mGroupAdress);
         mReceiverThread.start();
+        posRegistroPeer();
     }
 
     public void removePeer() throws IOException {
         mMulSocket.leaveGroup(mGroupAdress);
         mReceiverThread.stopThread();
+        posRemocaoPeer();
     }
 
     public void broadcastMensagem(String msg) throws IOException {
@@ -51,6 +53,14 @@ public abstract class Peer implements IPeer {
     }
     
     public abstract void receiveMessage(DatagramPacket message);
+
+    protected void posRegistroPeer() {
+        //does nothing by default
+    }
+
+    protected void posRemocaoPeer() {
+        //does nothing by default
+    }
     
     private class ReceiverThread extends Thread {
         public static final int SLEEP_MS = 1000;
