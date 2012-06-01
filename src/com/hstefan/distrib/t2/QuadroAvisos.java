@@ -2,15 +2,16 @@ package com.hstefan.distrib.t2;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
-import java.rmi.AccessException;
-import java.rmi.AlreadyBoundException;
-import java.rmi.NotBoundException;
-import java.rmi.RemoteException;
+import java.net.MalformedURLException;
+import java.rmi.*;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 
 /**
@@ -23,7 +24,7 @@ public class QuadroAvisos
         implements IQuadroAvisos, PeerListener {
 
     private final QuadroAvisosGUI gui;
-    private final Set<HostEntry> mGroupAdresses;
+    private final Map<HostEntry, IQuadroAvisos> mGroupAdresses;
     private final NotificadorPeerAtivo mNotificador;
     private final Registry mLocalRegistry;
     private final Peer peer;
@@ -54,16 +55,25 @@ public class QuadroAvisos
     @SuppressWarnings({"LeakingThisInConstructor", "CallToThreadStartDuringObjectConstruction"})
     public QuadroAvisos(QuadroAvisosGUI gui, String host, int port) throws RemoteException, IOException {
         this.gui = gui;
-        mGroupAdresses = new HashSet<HostEntry>();
+        mGroupAdresses = new HashMap<HostEntry, IQuadroAvisos>();
 
-        mLocalRegistry = LocateRegistry.createRegistry(port);
+        Registry registry = null;
         try {
-            mLocalRegistry.bind(REG_NAME, this);
-        } catch (RemoteException ex) {
-            //TODO
+            registry = LocateRegistry.getRegistry(1099);
+            registry.bind(REG_NAME, this);
         } catch (AlreadyBoundException ex) {
-            //TODO
+            Logger.getLogger(QuadroAvisos.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (RemoteException ex) {
+            try {
+                registry = LocateRegistry.createRegistry(1099);
+                registry.bind(REG_NAME, this);
+            } catch (AlreadyBoundException ex1) {
+                Logger.getLogger(QuadroAvisos.class.getName()).log(Level.SEVERE, null, ex1);
+            } catch (AccessException ex1) {
+                Logger.getLogger(QuadroAvisos.class.getName()).log(Level.SEVERE, null, ex1);
+            }
         }
+        mLocalRegistry = registry;
 
         peer = new Peer(host, port);
         peer.setListener(this);
@@ -84,6 +94,7 @@ public class QuadroAvisos
 
         try {
             mLocalRegistry.unbind(REG_NAME);
+            UnicastRemoteObject.unexportObject(this, true);
         } catch (RemoteException ex) {
             //TODO
         } catch (NotBoundException ex) {
@@ -100,20 +111,31 @@ public class QuadroAvisos
         });
     }
 
-    public void broadcast(String mensagem) throws RemoteException {
+    public void broadcast(String mensagem) {
         Registry r;
         IQuadroAvisos qr;
 
         synchronized (mGroupAdresses) {
-            for (HostEntry e : mGroupAdresses) {
-                r = LocateRegistry.getRegistry(e.adress.getHostAddress(), e.port);
-                try {
-                    qr = (IQuadroAvisos) r.lookup(e.reg_name);
-                    qr.notificar(mensagem);
-                } catch (NotBoundException ex) {
-                    mGroupAdresses.remove(e);
-                } catch (AccessException ex) {
-                    //TODO
+            Iterator<Map.Entry<HostEntry, IQuadroAvisos>> it = mGroupAdresses.entrySet().iterator();
+            while (it.hasNext()) {
+                Map.Entry<HostEntry, IQuadroAvisos> e = it.next();
+                IQuadroAvisos board = e.getValue();
+
+                if (board == null) {
+                    board = resolveEntry(e.getKey());
+                    if (board != null) {
+                        e.setValue(board);
+                    }
+                }
+
+                if (board == null) {
+                    it.remove();
+                } else {
+                    try {
+                        board.notificar(mensagem);
+                    } catch (RemoteException ex) {
+                        it.remove();
+                    }
                 }
             }
         }
@@ -122,8 +144,29 @@ public class QuadroAvisos
     @Override
     public void receiveMessage(DatagramPacket packet) {
         synchronized (mGroupAdresses) {
-            mGroupAdresses.add(new HostEntry(packet.getAddress(), packet.getPort(),
-                    new String(packet.getData()).trim()));
+            HostEntry entry = new HostEntry(packet.getAddress(), new String(packet.getData()).trim());
+            if (!mGroupAdresses.containsKey(entry)) {
+                mGroupAdresses.put(entry, resolveEntry(entry));
+            }
         }
+    }
+
+    private IQuadroAvisos resolveEntry(HostEntry entry) {
+        String url = "//" + entry.adress.getHostAddress() + ":1099/" + entry.reg_name;
+        IQuadroAvisos other_board = null;
+
+        try {
+            other_board = (IQuadroAvisos) Naming.lookup(url);
+        } catch (RemoteException ex) {
+            // TODO
+            Logger.getLogger(QuadroAvisos.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (NotBoundException ex) {
+            other_board = null;
+        } catch (MalformedURLException ex) {
+            // TODO
+            Logger.getLogger(QuadroAvisos.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        return other_board;
     }
 }

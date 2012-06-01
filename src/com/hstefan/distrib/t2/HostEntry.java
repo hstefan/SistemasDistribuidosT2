@@ -12,13 +12,19 @@ import java.net.InetAddress;
  */
 class HostEntry {
     public InetAddress adress;
-    public int port;
     public String reg_name;
 
-    public HostEntry(InetAddress adress, int port, String reg_name) {
+    public HostEntry(InetAddress adress, String reg_name) {
         this.adress = adress;
-        this.port = port;
         this.reg_name = reg_name;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 31 * hash + (this.adress != null ? this.adress.hashCode() : 0);
+        hash = 31 * hash + (this.reg_name != null ? this.reg_name.hashCode() : 0);
+        return hash;
     }
 
     @Override
@@ -33,21 +39,9 @@ class HostEntry {
         if (this.adress != other.adress && (this.adress == null || !this.adress.equals(other.adress))) {
             return false;
         }
-        if (this.port != other.port) {
-            return false;
-        }
         if ((this.reg_name == null) ? (other.reg_name != null) : !this.reg_name.equals(other.reg_name)) {
             return false;
         }
         return true;
-    }
-
-    @Override
-    public int hashCode() {
-        int hash = 3;
-        hash = 67 * hash + (this.adress != null ? this.adress.hashCode() : 0);
-        hash = 67 * hash + this.port;
-        hash = 67 * hash + (this.reg_name != null ? this.reg_name.hashCode() : 0);
-        return hash;
     }
 }

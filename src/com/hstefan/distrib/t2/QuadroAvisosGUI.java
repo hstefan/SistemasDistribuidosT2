@@ -139,12 +139,7 @@ public class QuadroAvisosGUI {
         if (bboard == null) {
             receiveMessage("Not connected!");
         } else {
-            try {
-                bboard.broadcast(message);
-            } catch (RemoteException ex) {
-                receiveMessage("Failed to send message!");
-                receiveMessage(ex.getMessage());
-            }
+            bboard.broadcast(message);
         }
     }
 }
