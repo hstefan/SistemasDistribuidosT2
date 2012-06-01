@@ -5,8 +5,6 @@ import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.net.UnknownHostException;
-import java.rmi.RemoteException;
-import java.rmi.server.UnicastRemoteObject;
 
 /**
  * {@link IPeer} implementation, calls method {@link receiveMessage} whenever a
@@ -14,16 +12,17 @@ import java.rmi.server.UnicastRemoteObject;
  *
  * @author hstefan
  */
-public abstract class Peer extends UnicastRemoteObject {
+public class Peer {
 
     private MulticastSocket mMulSocket;
     private InetAddress mGroupAdress;
     private ReceiverThread mReceiverThread;
     protected int mPort;
     protected String mHost;
+    private PeerListener listener = null;
     public static final int BUFFER_SIZE = 1024;
 
-    public Peer(String host, int port) throws RemoteException {
+    public Peer(String host, int port) {
         try {
             mHost = host;
             mPort = port;
@@ -38,33 +37,31 @@ public abstract class Peer extends UnicastRemoteObject {
         }
     }
 
+    public void setListener(PeerListener listener) {
+        this.listener = listener;
+    }
+
     public void registraPeer() throws IOException {
         mMulSocket.joinGroup(mGroupAdress);
         mReceiverThread = new ReceiverThread();
         mReceiverThread.start();
-        posRegistroPeer();
+
+        if (listener != null)
+            listener.posRegistroPeer();
     }
 
     public void removePeer() throws IOException {
         mMulSocket.leaveGroup(mGroupAdress);
         mReceiverThread.stopThread();
-        posRemocaoPeer();
+
+        if (listener != null)
+            listener.posRemocaoPeer();
     }
 
     public void broadcastMensagem(String msg) throws IOException {
         DatagramPacket packet = new DatagramPacket(msg.getBytes(), msg.length(),
                 mGroupAdress, mPort);
         mMulSocket.send(packet);
-    }
-
-    public abstract void receiveMessage(DatagramPacket message);
-
-    protected void posRegistroPeer() {
-        //does nothing by default
-    }
-
-    protected void posRemocaoPeer() {
-        //does nothing by default
     }
 
     private class ReceiverThread extends Thread {
@@ -85,7 +82,8 @@ public abstract class Peer extends UnicastRemoteObject {
                     DatagramPacket packet = new DatagramPacket(buf, buf.length);
                     mMulSocket.receive(packet);
 
-                    receiveMessage(packet);
+                    if (listener != null)
+                        listener.receiveMessage(packet);
                 } catch (IOException ex) {
                     //TODO
                 }
