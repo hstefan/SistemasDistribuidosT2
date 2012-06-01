@@ -136,11 +136,15 @@ public class QuadroAvisosGUI {
     }
 
     void sendMessage(String message) {
-        try {
-            bboard.broadcast(message);
-        } catch (RemoteException ex) {
-            receiveMessage("Failed to send message!");
-            receiveMessage(ex.getMessage());
+        if (bboard == null) {
+            receiveMessage("Not connected!");
+        } else {
+            try {
+                bboard.broadcast(message);
+            } catch (RemoteException ex) {
+                receiveMessage("Failed to send message!");
+                receiveMessage(ex.getMessage());
+            }
         }
     }
 }
