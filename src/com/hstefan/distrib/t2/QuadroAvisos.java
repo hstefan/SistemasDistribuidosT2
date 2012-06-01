@@ -22,11 +22,11 @@ public class QuadroAvisos
         extends UnicastRemoteObject
         implements IQuadroAvisos, PeerListener {
 
-    private QuadroAvisosGUI gui;
-    private Set<HostEntry> mGroupAdresses;
-    private NotificadorPeerAtivo mNotificador;
-    private Registry mLocalRegistry;
-    private Peer peer;
+    private final QuadroAvisosGUI gui;
+    private final Set<HostEntry> mGroupAdresses;
+    private final NotificadorPeerAtivo mNotificador;
+    private final Registry mLocalRegistry;
+    private final Peer peer;
     public static final String REG_NAME = "QuadroAvisos";
 
     public class NotificadorPeerAtivo extends Thread {
