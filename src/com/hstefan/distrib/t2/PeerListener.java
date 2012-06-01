@@ -8,9 +8,5 @@ import java.net.DatagramPacket;
  */
 public interface PeerListener {
 
-    void posRegistroPeer();
-
-    void posRemocaoPeer();
-
     void receiveMessage(DatagramPacket message);
 }

@@ -45,17 +45,11 @@ public class Peer {
         mMulSocket.joinGroup(mGroupAdress);
         mReceiverThread = new ReceiverThread();
         mReceiverThread.start();
-
-        if (listener != null)
-            listener.posRegistroPeer();
     }
 
     public void removePeer() throws IOException {
         mMulSocket.leaveGroup(mGroupAdress);
         mReceiverThread.stopThread();
-
-        if (listener != null)
-            listener.posRemocaoPeer();
     }
 
     public void broadcastMensagem(String msg) throws IOException {

@@ -51,16 +51,26 @@ public class QuadroAvisos
         }
     }
 
-    @SuppressWarnings("LeakingThisInConstructor")
+    @SuppressWarnings({"LeakingThisInConstructor", "CallToThreadStartDuringObjectConstruction"})
     public QuadroAvisos(QuadroAvisosGUI gui, String host, int port) throws RemoteException, IOException {
         this.gui = gui;
         mGroupAdresses = new HashSet<HostEntry>();
 
         mLocalRegistry = LocateRegistry.createRegistry(port);
+        try {
+            mLocalRegistry.bind(REG_NAME, this);
+        } catch (RemoteException ex) {
+            //TODO
+        } catch (AlreadyBoundException ex) {
+            //TODO
+        }
 
         peer = new Peer(host, port);
         peer.setListener(this);
         peer.registraPeer();
+
+        mNotificador = new NotificadorPeerAtivo();
+        mNotificador.start();
     }
 
     public void notificar(final String mensagem) throws RemoteException {
@@ -95,20 +105,8 @@ public class QuadroAvisos
                 new String(packet.getData()).trim()));
     }
 
-    @Override
-    public void posRegistroPeer() {
-        try {
-            mLocalRegistry.bind(REG_NAME, this);
-        } catch (RemoteException ex) {
-            //TODO
-        } catch (AlreadyBoundException ex) {
-            //TODO
-        }
 
-        mNotificador = new NotificadorPeerAtivo();
-        mNotificador.start();
-    }
-
+    /*
     @Override
     public void posRemocaoPeer() {
         mNotificador.signalStop();
@@ -120,4 +118,5 @@ public class QuadroAvisos
             //TODO
         }
     }
+    */
 }
