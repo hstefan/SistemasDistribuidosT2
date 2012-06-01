@@ -26,7 +26,7 @@ public class QuadroAvisos
     public static final String REG_NAME = "QuadroAvisos";
 
     public class NotificadorPeerAtivo extends Thread {
-        private boolean peerAtivo;
+        private boolean peerAtivo = true;
         
         @Override
         public void run() {
@@ -40,23 +40,21 @@ public class QuadroAvisos
             }
         }
         
-        public void setPeerAtivo(boolean ativo) {
-            if(peerAtivo != ativo && ativo) {
-                start(); //inicia thread que notifica periodicamente a existência
-                         //do peer
-            }
-            peerAtivo = ativo;
+        public void signalStop() {
+            peerAtivo = false;
         }
     }
     
     @SuppressWarnings("LeakingThisInConstructor")
-    public QuadroAvisos(QuadroAvisosGUI gui, String host, int port) throws RemoteException {
+    public QuadroAvisos(QuadroAvisosGUI gui, String host, int port) throws RemoteException, IOException {
         super(host, port);
         
         this.gui = gui;
         mGroupAdresses = new HashSet<HostEntry>();
         
         mLocalRegistry = LocateRegistry.createRegistry(mPort);
+
+        registraPeer();
     }
 
     public void notificar(final String mensagem) throws RemoteException {
@@ -69,12 +67,12 @@ public class QuadroAvisos
 
     public void broadcast(String mensagem) throws RemoteException {
         Registry r;
-        QuadroAvisos qr;
+        IQuadroAvisos qr;
     
         for(HostEntry e : mGroupAdresses){
-            r = LocateRegistry.getRegistry(e.adress.toString(), e.port);
+            r = LocateRegistry.getRegistry(e.adress.getHostAddress(), e.port);
             try {
-                qr = (QuadroAvisos)r.lookup(e.reg_name);
+                qr = (IQuadroAvisos)r.lookup(e.reg_name);
                 qr.notificar(mensagem);
             } catch (NotBoundException ex) {
                 mGroupAdresses.remove(e);
@@ -100,12 +98,13 @@ public class QuadroAvisos
             //TODO
         }
         
-        mNotificador.setPeerAtivo(true);
+        mNotificador = new NotificadorPeerAtivo();
+        mNotificador.start();
     }
     
     @Override
     protected void posRemocaoPeer() {
-        mNotificador.setPeerAtivo(false);
+        mNotificador.signalStop();
         try {
             mLocalRegistry.unbind(REG_NAME);
         } catch (RemoteException ex) {

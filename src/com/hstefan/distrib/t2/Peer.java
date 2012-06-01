@@ -5,27 +5,29 @@ import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.net.UnknownHostException;
+import java.rmi.RemoteException;
+import java.rmi.server.UnicastRemoteObject;
 
 /**
- * {@link IPeer} implementation, calls method {@link receiveMessage} whenever a 
+ * {@link IPeer} implementation, calls method {@link receiveMessage} whenever a
  * {@link ReceiverThread} receives a message from the multi-cast group.
+ *
  * @author hstefan
  */
-public abstract class Peer {
+public abstract class Peer extends UnicastRemoteObject {
+
     private MulticastSocket mMulSocket;
     private InetAddress mGroupAdress;
     private ReceiverThread mReceiverThread;
-   
     protected int mPort;
     protected String mHost;
-    
     public static final int BUFFER_SIZE = 1024;
-    
-    public Peer(String host, int port) {
+
+    public Peer(String host, int port) throws RemoteException {
         try {
             mHost = host;
             mPort = port;
-            
+
             mGroupAdress = InetAddress.getByName(host);
             mMulSocket = new MulticastSocket(port);
             mReceiverThread = null;
@@ -51,10 +53,10 @@ public abstract class Peer {
 
     public void broadcastMensagem(String msg) throws IOException {
         DatagramPacket packet = new DatagramPacket(msg.getBytes(), msg.length(),
-                mPort);
+                mGroupAdress, mPort);
         mMulSocket.send(packet);
     }
-    
+
     public abstract void receiveMessage(DatagramPacket message);
 
     protected void posRegistroPeer() {
@@ -64,29 +66,25 @@ public abstract class Peer {
     protected void posRemocaoPeer() {
         //does nothing by default
     }
-    
+
     private class ReceiverThread extends Thread {
+
         public static final int SLEEP_MS = 1000;
         private boolean mContinue;
-       
+
         public void stopThread() {
             mContinue = false;
         }
-   
-        @Override
-        public void start() {
-            mContinue = true;
-            super.start();
-        }
-        
+
         @Override
         public void run() {
-            while(!mContinue) {
+            mContinue = true;
+            while (mContinue) {
                 try {
                     byte[] buf = new byte[BUFFER_SIZE];
                     DatagramPacket packet = new DatagramPacket(buf, buf.length);
                     mMulSocket.receive(packet);
-                    
+
                     receiveMessage(packet);
                 } catch (IOException ex) {
                     //TODO

@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
 import java.rmi.RemoteException;
 import javax.swing.*;
 
@@ -38,6 +39,10 @@ public class QuadroAvisosGUI {
                     hostDlg.getPort());
         } catch (RemoteException ex) {
             System.out.println("Failed to export object: " + ex.getMessage());
+            System.exit(1);
+            return;
+        } catch (IOException ex) {
+            System.err.println("I/O Error: " + ex.getMessage());
             System.exit(1);
             return;
         }
@@ -98,6 +103,7 @@ public class QuadroAvisosGUI {
             bboard.broadcast(message);
         } catch (RemoteException ex) {
             receiveMessage("Failed to send message!");
+            receiveMessage(ex.getMessage());
         }
     }
 
