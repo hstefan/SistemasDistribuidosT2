@@ -112,9 +112,6 @@ public class QuadroAvisos
     }
 
     public void broadcast(String mensagem) {
-        Registry r;
-        IQuadroAvisos qr;
-
         synchronized (mGroupAdresses) {
             Iterator<Map.Entry<HostEntry, IQuadroAvisos>> it = mGroupAdresses.entrySet().iterator();
             while (it.hasNext()) {
