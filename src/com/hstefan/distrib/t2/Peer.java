@@ -1,10 +1,7 @@
 package com.hstefan.distrib.t2;
 
 import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.InetAddress;
-import java.net.MulticastSocket;
-import java.net.UnknownHostException;
+import java.net.*;
 
 /**
  * {@link IPeer} implementation, calls method {@link receiveMessage} whenever a
@@ -14,7 +11,7 @@ import java.net.UnknownHostException;
  */
 public class Peer {
 
-    private MulticastSocket mMulSocket;
+    private MulticastSocket mMulSocket = null;
     private InetAddress mGroupAdress;
     private ReceiverThread mReceiverThread;
     protected int mPort;
@@ -28,7 +25,7 @@ public class Peer {
             mPort = port;
 
             mGroupAdress = InetAddress.getByName(host);
-            mMulSocket = new MulticastSocket(port);
+
             mReceiverThread = null;
         } catch (UnknownHostException ex) {
             //TODO
@@ -42,14 +39,22 @@ public class Peer {
     }
 
     public void registraPeer() throws IOException {
-        mMulSocket.joinGroup(mGroupAdress);
+        mMulSocket = new MulticastSocket(mPort);
+
         mReceiverThread = new ReceiverThread();
         mReceiverThread.start();
+
+        mMulSocket.joinGroup(mGroupAdress);
     }
 
     public void removePeer() throws IOException {
         mMulSocket.leaveGroup(mGroupAdress);
+
         mReceiverThread.stopThread();
+        mReceiverThread = null;
+
+        mMulSocket.close();
+        mMulSocket = null;
     }
 
     public void broadcastMensagem(String msg) throws IOException {
@@ -68,15 +73,18 @@ public class Peer {
 
         @Override
         public void run() {
+            byte[] buf = new byte[BUFFER_SIZE];
+            DatagramPacket packet = new DatagramPacket(buf, buf.length);
+
             mContinue = true;
             while (mContinue) {
                 try {
-                    byte[] buf = new byte[BUFFER_SIZE];
-                    DatagramPacket packet = new DatagramPacket(buf, buf.length);
                     mMulSocket.receive(packet);
 
                     if (listener != null)
                         listener.receiveMessage(packet);
+                } catch (SocketException ex) {
+                    // Do nothing, presumably it was closed from main thread
                 } catch (IOException ex) {
                     //TODO
                 }
