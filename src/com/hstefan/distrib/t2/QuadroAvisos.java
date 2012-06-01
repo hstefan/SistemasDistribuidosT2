@@ -31,7 +31,7 @@ public class QuadroAvisos
 
     public class NotificadorPeerAtivo extends Thread {
 
-        private boolean peerAtivo = true;
+        private volatile boolean peerAtivo = true;
 
         @Override
         @SuppressWarnings("SleepWhileInLoop")
