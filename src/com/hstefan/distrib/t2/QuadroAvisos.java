@@ -86,25 +86,28 @@ public class QuadroAvisos
         Registry r;
         IQuadroAvisos qr;
 
-        for (HostEntry e : mGroupAdresses) {
-            r = LocateRegistry.getRegistry(e.adress.getHostAddress(), e.port);
-            try {
-                qr = (IQuadroAvisos) r.lookup(e.reg_name);
-                qr.notificar(mensagem);
-            } catch (NotBoundException ex) {
-                mGroupAdresses.remove(e);
-            } catch (AccessException ex) {
-                //TODO
+        synchronized (mGroupAdresses) {
+            for (HostEntry e : mGroupAdresses) {
+                r = LocateRegistry.getRegistry(e.adress.getHostAddress(), e.port);
+                try {
+                    qr = (IQuadroAvisos) r.lookup(e.reg_name);
+                    qr.notificar(mensagem);
+                } catch (NotBoundException ex) {
+                    mGroupAdresses.remove(e);
+                } catch (AccessException ex) {
+                    //TODO
+                }
             }
         }
     }
 
     @Override
     public void receiveMessage(DatagramPacket packet) {
-        mGroupAdresses.add(new HostEntry(packet.getAddress(), packet.getPort(),
-                new String(packet.getData()).trim()));
+        synchronized (mGroupAdresses) {
+            mGroupAdresses.add(new HostEntry(packet.getAddress(), packet.getPort(),
+                    new String(packet.getData()).trim()));
+        }
     }
-
 
     /*
     @Override

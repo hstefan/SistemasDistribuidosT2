@@ -61,7 +61,7 @@ public class Peer {
     private class ReceiverThread extends Thread {
 
         public static final int SLEEP_MS = 1000;
-        private boolean mContinue;
+        private volatile boolean mContinue;
 
         public void stopThread() {
             mContinue = false;
