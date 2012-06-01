@@ -73,6 +73,24 @@ public class QuadroAvisos
         mNotificador.start();
     }
 
+    public void closing() {
+        mNotificador.signalStop();
+
+        try {
+            peer.removePeer();
+        } catch (IOException ex) {
+            // TODO
+        }
+
+        try {
+            mLocalRegistry.unbind(REG_NAME);
+        } catch (RemoteException ex) {
+            //TODO
+        } catch (NotBoundException ex) {
+            //TODO
+        }
+    }
+
     public void notificar(final String mensagem) throws RemoteException {
         SwingUtilities.invokeLater(new Runnable() {
 
@@ -108,18 +126,4 @@ public class QuadroAvisos
                     new String(packet.getData()).trim()));
         }
     }
-
-    /*
-    @Override
-    public void posRemocaoPeer() {
-        mNotificador.signalStop();
-        try {
-            mLocalRegistry.unbind(REG_NAME);
-        } catch (RemoteException ex) {
-            //TODO
-        } catch (NotBoundException ex) {
-            //TODO
-        }
-    }
-    */
 }

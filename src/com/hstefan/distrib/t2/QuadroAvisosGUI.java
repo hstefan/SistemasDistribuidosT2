@@ -4,6 +4,8 @@ import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.IOException;
 import java.rmi.RemoteException;
 import javax.swing.*;
@@ -14,11 +16,11 @@ import javax.swing.*;
  */
 public class QuadroAvisosGUI {
 
-    private JFrame frame;
-    private JTextField textField;
-    private DefaultListModel<String> messageListModel;
+    private final JFrame frame;
+    private final JButton groupButton;
+    private final JTextField textField;
+    private final DefaultListModel<String> messageListModel;
     private QuadroAvisos bboard;
-    private static HostDialog hostDlg;
 
     /**
      * Launch the application.
@@ -33,20 +35,6 @@ public class QuadroAvisosGUI {
         }
 
         QuadroAvisosGUI window = new QuadroAvisosGUI();
-        QuadroAvisos bboard;
-        try {
-            bboard = new QuadroAvisos(window, hostDlg.getHost(),
-                    hostDlg.getPort());
-        } catch (RemoteException ex) {
-            System.out.println("Failed to export object: " + ex.getMessage());
-            System.exit(1);
-            return;
-        } catch (IOException ex) {
-            System.err.println("I/O Error: " + ex.getMessage());
-            System.exit(1);
-            return;
-        }
-        window.setBulletinBoard(bboard);
         window.frame.setVisible(true);
     }
 
@@ -54,16 +42,17 @@ public class QuadroAvisosGUI {
      * Create the application.
      */
     public QuadroAvisosGUI() {
-        initialize();
-    }
-
-    /**
-     * Initialize the contents of the frame.
-     */
-    private void initialize() {
         frame = new JFrame();
         frame.setBounds(100, 100, 450, 300);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+
+        frame.addWindowListener(new WindowAdapter() {
+
+            @Override
+            public void windowClosing(WindowEvent windowEvent) {
+                leaveGroup();
+            }
+        });
 
         Container content_pane = frame.getContentPane();
 
@@ -90,8 +79,56 @@ public class QuadroAvisosGUI {
             }
         });
 
-        hostDlg = new HostDialog(frame, true);
+        groupButton = new JButton("Entrar");
+        input_section.add(groupButton);
+        groupButton.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent e) {
+                if (bboard == null) {
+                    joinGroup();
+                } else {
+                    leaveGroup();
+                }
+            }
+        });
+    }
+
+    void joinGroup() {
+        if (bboard != null) {
+            leaveGroup();
+        }
+
+        HostDialog hostDlg = new HostDialog(frame, true);
         hostDlg.setVisible(true);
+
+        if (!hostDlg.getSucess()) {
+            return;
+        }
+
+        try {
+            bboard = new QuadroAvisos(this, hostDlg.getHost(), hostDlg.getPort());
+        } catch (RemoteException ex) {
+            JOptionPane.showMessageDialog(frame, "Failed to export object: " + ex.getMessage());
+            return;
+        } catch (IOException ex) {
+            JOptionPane.showMessageDialog(frame, "I/O Error: " + ex.getMessage());
+            return;
+        }
+
+        receiveMessage("--- Joined group ---");
+        groupButton.setText("Sair");
+    }
+
+    void leaveGroup() {
+        if (bboard == null) {
+            return;
+        }
+
+        bboard.closing();
+        bboard = null;
+
+        receiveMessage("--- Left group ---");
+        groupButton.setText("Entrar");
     }
 
     void receiveMessage(String mensagem) {
@@ -105,9 +142,5 @@ public class QuadroAvisosGUI {
             receiveMessage("Failed to send message!");
             receiveMessage(ex.getMessage());
         }
-    }
-
-    private void setBulletinBoard(QuadroAvisos bboard) {
-        this.bboard = bboard;
     }
 }

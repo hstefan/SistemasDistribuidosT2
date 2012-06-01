@@ -15,6 +15,7 @@ public class HostDialog extends JDialog {
 
     private JTextField txtHost;
     private JTextField txtPort;
+    private boolean success = false;
 
     /**
      * Create the dialog.
@@ -30,20 +31,19 @@ public class HostDialog extends JDialog {
         
         txtHost = new JTextField();
         txtHost.setText("228.5.6.7");
-        txtHost.setColumns(10);
         
         content_panel.add(txtHost);
         
         txtPort = new JTextField();
         txtPort.setText("6450");
-        txtPort.setColumns(4);
         
         content_panel.add(txtPort);
         
-        JButton btnConectar = new JButton("Conectar");
+        JButton btnConectar = new JButton("Entrar no Grupo");
         btnConectar.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                dispose();
+                success = true;
+                setVisible(false);
             }
         });
         
@@ -58,5 +58,9 @@ public class HostDialog extends JDialog {
 
     public int getPort() {
         return Integer.parseInt(txtPort.getText());
+    }
+
+    public boolean getSucess() {
+        return success;
     }
 }
