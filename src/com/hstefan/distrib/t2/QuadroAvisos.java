@@ -2,7 +2,10 @@ package com.hstefan.distrib.t2;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
-import java.rmi.*;
+import java.rmi.AccessException;
+import java.rmi.AlreadyBoundException;
+import java.rmi.NotBoundException;
+import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
@@ -17,7 +20,7 @@ import javax.swing.SwingUtilities;
 @SuppressWarnings("serial")
 public class QuadroAvisos
         extends UnicastRemoteObject
-        implements IQuadroAvisos, Remote, PeerListener {
+        implements IQuadroAvisos, PeerListener {
 
     private QuadroAvisosGUI gui;
     private Set<HostEntry> mGroupAdresses;
